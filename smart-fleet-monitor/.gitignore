@@ -1,0 +1,4 @@
+mosquitto/data/
+mosquitto/log/
+__pycache__/
+*.pyc

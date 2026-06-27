@@ -1,0 +1,93 @@
+services:
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: fleet_mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - fleet_network
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: fleet_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: fleetroot
+      MYSQL_DATABASE: fleet_db
+      MYSQL_USER: fleetuser
+      MYSQL_PASSWORD: fleetpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - fleet_network
+    restart: unless-stopped
+    
+  mongo:
+    image: mongo:6.0
+    container_name: fleet_mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: fleetuser
+      MONGO_INITDB_ROOT_PASSWORD: fleetpass
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - fleet_network
+    restart: unless-stopped
+    
+  neo4j:
+    image: neo4j:5
+    container_name: fleet_neo4j
+    environment:
+      NEO4J_AUTH: neo4j/fleetpass
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - fleet_network
+    restart: unless-stopped
+  
+  simulator:
+    build:
+      context: ./simulator
+    container_name: fleet_simulator
+    depends_on:
+      - mosquitto
+      - mysql
+      - mongo
+      - neo4j
+    networks:
+      - fleet_network
+    restart: unless-stopped
+
+  subscriber:
+    build:
+      context: ./subscriber
+    container_name: fleet_subscriber
+    depends_on:
+      - mosquitto
+      - mysql
+      - mongo
+      - neo4j
+    networks:
+      - fleet_network
+    restart: unless-stopped
+volumes:
+  mysql_data:
+  mongo_data:
+  neo4j_data:
+
+networks:
+  fleet_network:
+    driver: bridge
