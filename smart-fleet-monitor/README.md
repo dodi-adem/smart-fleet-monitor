@@ -10,7 +10,6 @@ via MQTT and stores it across three different databases based on data type.
 - **MongoDB** — raw telemetry storage
 - **Neo4j** — route graph analysis
 - **Python** — simulator, subscriber, data routing
-- **Streamlit** — live dashboard
 - **Docker** — full containerization
 
 ## Run
@@ -19,7 +18,7 @@ via MQTT and stores it across three different databases based on data type.
 docker compose up -d --build
 ```
 
-Dashboard available at `http://localhost:8501`
+
 
 ## Stop
 
